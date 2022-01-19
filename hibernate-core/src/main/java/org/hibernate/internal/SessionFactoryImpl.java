@@ -11,9 +11,13 @@ import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -99,7 +103,9 @@ import org.hibernate.jpa.internal.AfterCompletionActionLegacyJpaImpl;
 import org.hibernate.jpa.internal.ExceptionMapperLegacyJpaImpl;
 import org.hibernate.jpa.internal.ManagedFlushCheckerLegacyJpaImpl;
 import org.hibernate.jpa.internal.PersistenceUnitUtilImpl;
+import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.RootClass;
+import org.hibernate.mapping.Table;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.metadata.CollectionMetadata;
 import org.hibernate.metamodel.internal.MetamodelImpl;
@@ -132,6 +138,8 @@ import org.hibernate.type.Type;
 import org.hibernate.type.TypeResolver;
 
 import org.jboss.logging.Logger;
+
+import com.lswe.irisportail.SpecDbHolder;
 
 import static org.hibernate.metamodel.internal.JpaMetaModelPopulationSetting.determineJpaMetaModelPopulationSetting;
 
@@ -313,6 +321,232 @@ public class SessionFactoryImpl implements SessionFactoryImplementor {
 			} );
 			metadata.validate();
 
+			// Talentia	
+			/*********** Start analyse for UnibolMapping ****************/
+			/***************************************************************/
+			String databaseType = getSessionFactoryOptions().getLsweBackofficeDatabaseType();
+			String useUnibol_mapping = getSessionFactoryOptions().getLsweBackofficeUseUnibol_mapping();
+			if (null != useUnibol_mapping && useUnibol_mapping.equalsIgnoreCase("true") && databaseType != null && !databaseType.isEmpty()) {
+
+				LOG.trace("Start checking for UnibolMapping ---");
+				boolean UnibolMappingIsOk = true;
+
+				String prefixe = getSessionFactoryOptions().getLsweBackofficePrefixeLib();
+				String suffixe = getSessionFactoryOptions().getLsweBackofficeSuffixeLib();
+				// Le préfixe et le suffixe doivent être renseignés dans le
+				// persistence.xml
+				if ((prefixe != null && !prefixe.isEmpty()) && (suffixe != null && !suffixe.isEmpty())) {
+
+					String unibol_mappingSchema = getSessionFactoryOptions().getLsweBackofficeUnibol_mappingSchema();
+
+					// Connexion jdbc
+					Connection con = null;
+					ResultSet rs = null;
+					PreparedStatement ps = null;
+					try {
+
+						// con = getConnectionProvider().getConnection();
+						con = SessionFactoryImpl.this.
+								getSessionFactoryOptions().getServiceRegistry().
+								getService(ConnectionProvider.class).getConnection();
+
+						String jdbcUrl = con.getMetaData().getURL();
+						boolean doWork = false;
+
+						if (databaseType.equalsIgnoreCase(SpecDbHolder.getIrisdb2())) {
+							if (!jdbcUrl.contains(SpecDbHolder.getUrlDb2400()))
+								LOG.warn("Your jdbc datasource is not a 'DB2/400' datasource");
+						}
+
+						if (databaseType.equalsIgnoreCase(SpecDbHolder.getIRISORA())) {
+							if (jdbcUrl.contains(SpecDbHolder.getUrlOracle()))
+								doWork = true;
+							else {
+								LOG.error("Type 'ORACLE' not correspond to jdcb URL");
+								LOG.error("UnibolMapping is not activated");
+							}
+						}
+
+						if (databaseType.equalsIgnoreCase(SpecDbHolder.getIRISSQL())) {
+							if (jdbcUrl.contains(SpecDbHolder.getUrlSqlserver()))
+								doWork = true;
+							else {
+								LOG.error("Type 'MSSQL' not correspond to jdcb URL");
+								LOG.error("UnibolMapping is not activated");
+							}
+						}
+						if (doWork) {
+							// Liste des tables d'une configuration -> Persistence
+							// unit
+							Iterator<PersistentClass> persistentClasses = metadata.getEntityBindings().iterator();
+							
+							//Iterator tables = cfg.getTableMappings();
+
+							// Préparation de la requête
+							ps = con.prepareStatement(SpecDbHolder.getSqlPrepStat(unibol_mappingSchema));
+
+							// Construction des librairies à utiliser
+							// String spLib = prefixe + SpecDbHolder.getLibsp() + suffixe;
+							String spLib = prefixe + "ext";
+							String fLib = prefixe + SpecDbHolder.getLibf() + suffixe;
+							String fxLib = prefixe + SpecDbHolder.getLibfx() + suffixe;
+							String fxWithoutSuffixeLib = prefixe + SpecDbHolder.getLibfx();
+
+							// Les arguments de la requête -> Nom des librairies à
+							// utiliser
+							ps.setString(1, spLib);
+							ps.setString(2, fLib);
+							ps.setString(3, fxLib);
+							ps.setString(4, fxWithoutSuffixeLib);
+
+							// On itère sur les tables de la configuration
+							while (persistentClasses.hasNext()) {
+								// Table courante
+								Table table = (Table) persistentClasses.next().getTable();
+								String as400_file_name = table.getName();
+
+								// tables de substitution pour performance Infinite, on prendra en priorité la table standard si elle est sous SQL
+								String as400_B_file_name;
+								switch (as400_file_name) {
+									case "SALARN":
+										as400_B_file_name = "BSSALA";
+										break;
+									case "LANGUE":
+										as400_B_file_name = "BLANGU";
+										break;
+									case "PERMI7":
+										as400_B_file_name = "BPERMI";
+										break;
+									case "ENFAN5":
+										as400_B_file_name = "BENFAN";
+										break;
+									case "SALCJT":
+										as400_B_file_name = "BSALCJ";
+										break;
+									case "SALCHG":
+										as400_B_file_name = "BSALCH";
+										break;
+									default:
+										as400_B_file_name = as400_file_name;
+								}
+								ps.setString(5, as400_file_name);
+								ps.setString(6, as400_B_file_name);
+
+								try {
+									rs = ps.executeQuery();
+									String libraryName = "";
+									String libraryNameChosed = "";
+									String asFileName = "";
+									String asFileNameChosed = "";
+									int priority = 0;
+									while (rs.next()) {
+
+										libraryName = rs.getString("LIBRARY_NAME");
+										asFileName = rs.getString("FILE_NAME");
+
+										// si la table est présente dans plusieurs bib, on priorise
+										if (libraryName.equalsIgnoreCase(spLib)) {
+											if (asFileNameChosed.isEmpty() || asFileName.equals(as400_file_name)) {
+												asFileNameChosed = asFileName;
+												table.setName(rs.getString("TABLE_NAME"));
+												libraryNameChosed = spLib;
+												priority = 4;
+											}
+
+										} else {
+											if (libraryName.equalsIgnoreCase(fLib) && priority < 3) {
+												if (asFileNameChosed.isEmpty() || asFileName.equals(as400_file_name)) {
+													asFileNameChosed = asFileName;
+													table.setName(rs.getString("TABLE_NAME"));
+													libraryNameChosed = fLib;
+													priority = 3;
+												}
+
+											} else {
+												if (libraryName.equalsIgnoreCase(fxLib) && priority < 2) {
+													if (asFileNameChosed.isEmpty() || asFileName.equals(as400_file_name)) {
+														asFileNameChosed = asFileName;
+														table.setName(rs.getString("TABLE_NAME"));
+														libraryNameChosed = fxLib;
+														priority = 2;
+													}
+
+												} else {
+													if (libraryName.equalsIgnoreCase(fxWithoutSuffixeLib) && priority < 1) {
+														if (asFileNameChosed.isEmpty() || asFileName.equals(as400_file_name)) {
+															asFileNameChosed = asFileName;
+															table.setName(rs.getString("TABLE_NAME"));
+															libraryNameChosed = fxWithoutSuffixeLib;
+															priority = 1;
+														}
+													}
+												}
+											}
+										}
+									}
+
+									if (priority == 0) {
+										StringBuffer stb = new StringBuffer();
+										stb.append("Table " + as400_file_name);
+										if (!as400_file_name.equals(as400_B_file_name)) {
+											stb.append(" ou"  + as400_B_file_name);
+										}
+										stb.append(" non trouvée dans Unibol_Mapping.");
+										LOG.error(stb.toString());
+										UnibolMappingIsOk = false;
+									} else {
+										if (!asFileNameChosed.equals(as400_file_name) ) {
+											// on a utilisé le fichier de substitution "B"xxxx
+											LOG.info("Table " + as400_file_name + " substituée par son équivalent en base SQL " + as400_B_file_name + " associée dans Unibol_Mapping à " + table.getName());
+										}
+										LOG.trace("Table " + as400_file_name + " de " + libraryNameChosed + " associée dans Unibol_Mapping à " + table.getName());
+									}
+
+								} catch (SQLException e) {
+									e.printStackTrace();
+									LOG.warn("Check the database type for your datasource in the components.xml");
+									LOG.warn("Check that the libraries exist in your database");
+									break;
+								} finally {
+									// try {
+									// if (null != rs && !rs.isClosed()) {
+									// rs.close();
+									// }
+									// if (null != ps && !ps.isClosed()) {
+									// ps.close();
+									// }
+									// if (null != con && !con.isClosed()) {
+									// con.close();
+									// }
+									// } catch (SQLException e) {
+									// e.printStackTrace();
+									// }
+								}
+							}
+						}
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					} finally {
+						try {
+							if (null != con && !con.isClosed()) {
+								con.close();
+							}
+						} catch (SQLException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				LOG.trace("End checking for UnibolMapping");
+				if (!UnibolMappingIsOk) {
+					throw new HibernateException("Au moins une table n'est pas définie dans Unibol_Mapping.");
+				}
+			}
+
+			/***************************************************************/
+			/*********** End analyse for UnibolMapping ****************/
+			/***************************************************************/
+			// Talentia						
+			
 			LOG.debug( "Instantiated session factory" );
 
 			this.metamodel = metadata.getTypeConfiguration().scope( this );
