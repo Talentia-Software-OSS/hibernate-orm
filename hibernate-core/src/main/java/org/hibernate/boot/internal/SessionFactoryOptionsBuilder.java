@@ -65,6 +65,18 @@ import org.hibernate.stat.Statistics;
 import org.hibernate.tuple.entity.EntityTuplizer;
 import org.hibernate.tuple.entity.EntityTuplizerFactory;
 
+//talentia
+import static org.hibernate.cfg.AvailableSettings.LSWE_BACKOFFICE_DATABASE_TYPE;
+import static org.hibernate.cfg.AvailableSettings.LSWE_BACKOFFICE_PREFIXE_LIB;
+import static org.hibernate.cfg.AvailableSettings.LSWE_BACKOFFICE_SUFFIXE_LIB;
+import static org.hibernate.cfg.AvailableSettings.LSWE_BACKOFFICE_REPLACE_NULL_FIELD;
+import static org.hibernate.cfg.AvailableSettings.LSWE_BACKOFFICE_REPLACE_EMPTY_FIELD;
+import static org.hibernate.cfg.AvailableSettings.LSWE_BACKOFFICE_DELETE_END_SPACE;
+import static org.hibernate.cfg.AvailableSettings.LSWE_BACKOFFICE_USE_UNIBOL_MAPPING;
+import static org.hibernate.cfg.AvailableSettings.LSWE_BACKOFFICE_UNIBOL_MAPPING_SCHEMA;
+import static org.hibernate.cfg.AvailableSettings.LSWE_BACKOFFICE_INFINITE_DBC_SCHEMA;
+//talentia
+
 import static org.hibernate.cfg.AvailableSettings.ACQUIRE_CONNECTIONS;
 import static org.hibernate.cfg.AvailableSettings.ALLOW_JTA_TRANSACTION_ACCESS;
 import static org.hibernate.cfg.AvailableSettings.ALLOW_REFRESH_DETACHED_ENTITY;
@@ -150,6 +162,18 @@ public class SessionFactoryOptionsBuilder implements SessionFactoryOptions {
 	private final String uuid = LocalObjectUuidHelper.generateLocalObjectUuid();
 	private final StandardServiceRegistry serviceRegistry;
 
+	// talentia
+	private String lsweBackofficeDatabaseType;
+	private String lsweBackofficePrefixeLib;
+	private String lsweBackofficeSuffixeLib;
+	private String lsweBackofficeReplaceNullField;
+	private String lsweBackofficeReplaceEmptyField;
+	private String lsweBackofficeDeleteEndSpace;
+	private String lsweBackofficeUseUnibol_mapping;
+	private String lsweBackofficeUnibol_mappingSchema;
+	private String lsweBackofficeInfinite_dbcSchema;
+	// talentia
+	
 	// integration
 	private Object beanManagerReference;
 	private Object validatorFactoryReference;
@@ -281,6 +305,18 @@ public class SessionFactoryOptionsBuilder implements SessionFactoryOptions {
 			( (ConfigurationServiceImpl) cfgService ).injectServices( (ServiceRegistryImplementor) serviceRegistry );
 		}
 
+		// talentia
+		this.lsweBackofficeDatabaseType = (String) configurationSettings.get( AvailableSettings.LSWE_BACKOFFICE_DATABASE_TYPE );
+		this.lsweBackofficePrefixeLib = (String) configurationSettings.get( AvailableSettings.LSWE_BACKOFFICE_PREFIXE_LIB);
+		this.lsweBackofficeSuffixeLib = (String) configurationSettings.get( AvailableSettings.LSWE_BACKOFFICE_SUFFIXE_LIB );
+		this.lsweBackofficeReplaceNullField = (String) configurationSettings.get( AvailableSettings.LSWE_BACKOFFICE_REPLACE_NULL_FIELD );
+		this.lsweBackofficeReplaceEmptyField = (String) configurationSettings.get( AvailableSettings.LSWE_BACKOFFICE_REPLACE_EMPTY_FIELD );
+		this.lsweBackofficeDeleteEndSpace = (String) configurationSettings.get( AvailableSettings.LSWE_BACKOFFICE_DELETE_END_SPACE );
+		this.lsweBackofficeUseUnibol_mapping = (String) configurationSettings.get( AvailableSettings.LSWE_BACKOFFICE_USE_UNIBOL_MAPPING );
+		this.lsweBackofficeUnibol_mappingSchema = (String) configurationSettings.get( AvailableSettings.LSWE_BACKOFFICE_UNIBOL_MAPPING_SCHEMA );
+		this.lsweBackofficeInfinite_dbcSchema = (String) configurationSettings.get( AvailableSettings.LSWE_BACKOFFICE_INFINITE_DBC_SCHEMA );
+		// talentia
+		
 		this.beanManagerReference = configurationSettings.getOrDefault(
 				AvailableSettings.CDI_BEAN_MANAGER,
 				configurationSettings.get( AvailableSettings.JAKARTA_CDI_BEAN_MANAGER )
@@ -696,7 +732,52 @@ public class SessionFactoryOptionsBuilder implements SessionFactoryOptions {
 		return PhysicalConnectionHandlingMode.interpret( effectiveAcquisitionMode, effectiveReleaseMode );
 	}
 
+	// talentia
+	@Override
+	public String getLsweBackofficeDatabaseType() {
+		return lsweBackofficeDatabaseType;
+	}
 
+	@Override
+	public String getLsweBackofficePrefixeLib() {
+		return lsweBackofficePrefixeLib;
+	}
+
+	@Override
+	public String getLsweBackofficeSuffixeLib() {
+		return lsweBackofficeSuffixeLib;
+	}
+
+	@Override
+	public String getLsweBackofficeDeleteEndSpace() {
+		return lsweBackofficeDeleteEndSpace;
+	}
+
+	@Override
+	public String getLsweBackofficeReplaceNullField() {
+		return lsweBackofficeReplaceNullField;
+	}
+
+	@Override
+	public String getLsweBackofficeReplaceEmptyField() {
+		return lsweBackofficeReplaceEmptyField;
+	}
+
+	@Override
+	public String getLsweBackofficeUseUnibol_mapping() {
+		return lsweBackofficeUseUnibol_mapping;
+	}
+
+	@Override
+	public String getLsweBackofficeUnibol_mappingSchema() {
+		return lsweBackofficeUnibol_mappingSchema;
+	}
+
+	@Override
+	public String getLsweBackofficeInfinite_dbcSchema() {
+		return lsweBackofficeInfinite_dbcSchema;
+	}
+	// talentia
 
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

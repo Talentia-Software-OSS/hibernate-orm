@@ -29,6 +29,53 @@ import org.hibernate.tool.schema.SourceType;
  */
 public interface AvailableSettings extends org.hibernate.jpa.AvailableSettings {
 
+	//start Talentia
+	/**
+	 * <tt>DatabaseType</tt> Get the database type db2400, sql, oracle.
+	 */
+	String LSWE_BACKOFFICE_DATABASE_TYPE = "lswe.backoffice.database.type";
+
+	/**
+	 * <tt>Prefix of library</tt> Get the prefix of the library.
+	 */
+	String LSWE_BACKOFFICE_PREFIXE_LIB = "lswe.backoffice.prefixe.lib";
+
+	/**
+	 * <tt>Suffixe</tt> Get the prefix of the library.
+	 */
+	String LSWE_BACKOFFICE_SUFFIXE_LIB = "lswe.backoffice.suffixe.lib";
+
+	/**
+	 * <tt>isNull</tt> Specify if the null value is used.
+	 */
+	String LSWE_BACKOFFICE_REPLACE_NULL_FIELD = "lswe.backoffice.replace.null.field";
+
+	/**
+	 * <tt>isEmpty</tt> Specify if the empty value is used.
+	 */
+	String LSWE_BACKOFFICE_REPLACE_EMPTY_FIELD = "lswe.backoffice.replace.empty.field";
+
+	/**
+	 * <tt>deleteEndSpace</tt> Specify if the end spaces must be deleted.
+	 */
+	String LSWE_BACKOFFICE_DELETE_END_SPACE = "lswe.backoffice.delete.end.space";
+
+	/**
+	 * <tt>work with unibol_mapping</tt> Specify if the unibol_mapping table has to be considered.
+	 */
+	String LSWE_BACKOFFICE_USE_UNIBOL_MAPPING ="lswe.backoffice.use.unibol_mapping";
+
+	/**
+	 * <tt>work with unibol_mapping</tt> Specify the schema where unibol_mapping table is in.
+	 */
+	String LSWE_BACKOFFICE_UNIBOL_MAPPING_SCHEMA ="lswe.backoffice.unibol_mapping.schema";
+	
+	/**
+	 * <tt>work with unibol_mapping</tt> Specify the schema where converted tables has to be considered.
+	 */
+	String LSWE_BACKOFFICE_INFINITE_DBC_SCHEMA ="lswe.backoffice.infinite_dbc.schema";
+	//end Talentia
+	
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// JPA defined settings
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
