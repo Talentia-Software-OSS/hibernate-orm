@@ -44,6 +44,19 @@ import org.hibernate.tuple.entity.EntityTuplizerFactory;
  * @since 5.0
  */
 public interface SessionFactoryOptions {
+	
+	//talentia
+	String getLsweBackofficeDatabaseType();
+	String getLsweBackofficePrefixeLib();
+	String getLsweBackofficeSuffixeLib();
+	String getLsweBackofficeDeleteEndSpace();
+	String getLsweBackofficeReplaceNullField();
+	String getLsweBackofficeReplaceEmptyField();
+	String getLsweBackofficeUseUnibol_mapping();
+	String getLsweBackofficeUnibol_mappingSchema();
+	String getLsweBackofficeInfinite_dbcSchema();
+	//talentia
+	
 	/**
 	 * Get the UUID unique to this SessionFactoryOptions.  Will be the
 	 * same value available as {@link SessionFactoryImplementor#getUuid()}.

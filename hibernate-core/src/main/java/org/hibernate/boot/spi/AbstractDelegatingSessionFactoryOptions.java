@@ -52,6 +52,53 @@ public class AbstractDelegatingSessionFactoryOptions implements SessionFactoryOp
 		return delegate;
 	}
 
+	// talentia
+	@Override
+	public String getLsweBackofficeDatabaseType() {
+		return delegate.getLsweBackofficeDatabaseType();
+	}
+
+	@Override
+	public String getLsweBackofficePrefixeLib() {
+		return delegate.getLsweBackofficePrefixeLib();
+	}
+
+	@Override
+	public String getLsweBackofficeSuffixeLib() {
+		return delegate.getLsweBackofficeSuffixeLib();
+	}
+
+	@Override
+	public String getLsweBackofficeDeleteEndSpace() {
+		return delegate.getLsweBackofficeDeleteEndSpace();
+	}
+
+	@Override
+	public String getLsweBackofficeReplaceNullField() {
+		return delegate.getLsweBackofficeReplaceNullField();
+	}
+
+	@Override
+	public String getLsweBackofficeReplaceEmptyField() {
+		return delegate.getLsweBackofficeReplaceEmptyField();
+	}
+
+	@Override
+	public String getLsweBackofficeUseUnibol_mapping() {
+		return delegate.getLsweBackofficeUseUnibol_mapping();
+	}
+
+	@Override
+	public String getLsweBackofficeUnibol_mappingSchema() {
+		return delegate.getLsweBackofficeUnibol_mappingSchema();
+	}
+
+	@Override
+	public String getLsweBackofficeInfinite_dbcSchema() {
+		return delegate.getLsweBackofficeInfinite_dbcSchema();
+	}
+	// talentia
+	
 	@Override
 	public String getUuid() {
 		return delegate().getUuid();
