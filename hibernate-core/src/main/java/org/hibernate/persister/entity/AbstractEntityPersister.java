@@ -146,10 +146,14 @@ import org.hibernate.tuple.ValueGeneration;
 import org.hibernate.tuple.entity.EntityMetamodel;
 import org.hibernate.tuple.entity.EntityTuplizer;
 import org.hibernate.type.AssociationType;
+import org.hibernate.type.CharacterType;
 import org.hibernate.type.CollectionType;
 import org.hibernate.type.ComponentType;
 import org.hibernate.type.CompositeType;
+import org.hibernate.type.DoubleType;
 import org.hibernate.type.EntityType;
+import org.hibernate.type.IntegerType;
+import org.hibernate.type.StringType;
 import org.hibernate.type.Type;
 import org.hibernate.type.TypeHelper;
 import org.hibernate.type.VersionType;
@@ -164,6 +168,9 @@ public abstract class AbstractEntityPersister
 		implements OuterJoinLoadable, Queryable, ClassMetadata, UniqueKeyLoadable,
 		SQLLoadable, LazyPropertyInitializer, PostInsertIdentityPersister, Lockable {
 
+	// talentia
+	private static final String REGEXP_DEL_WHITE_SPACE = "[ \t]+$";
+	
 	private static final CoreMessageLogger LOG = CoreLogging.messageLogger( AbstractEntityPersister.class );
 
 	public static final String ENTITY_CLASS = "class";
@@ -3067,9 +3074,85 @@ public abstract class AbstractEntityPersister
 			LOG.tracev( "Dehydrating entity: {0}", MessageHelper.infoString( this, id, getFactory() ) );
 		}
 
+		// début spé Talentia
+		boolean isNull = false;
+		if (session.getFactory().getSessionFactoryOptions().getLsweBackofficeReplaceNullField() != null
+				&& session.getFactory().getSessionFactoryOptions().getLsweBackofficeReplaceNullField().equalsIgnoreCase("true"))
+			isNull = true;
+		
+		boolean isEmpty = false;
+		if (session.getFactory().getSessionFactoryOptions().getLsweBackofficeReplaceEmptyField() != null
+				&& session.getFactory().getSessionFactoryOptions().getLsweBackofficeReplaceEmptyField().equalsIgnoreCase("true"))
+			isEmpty = true;
+		// fin spé Talentia
+		
 		for ( int i = 0; i < entityMetamodel.getPropertySpan(); i++ ) {
 			if ( includeProperty[i] && isPropertyOfTable( i, j )
 					&& !lobProperties.contains( i ) ) {
+				
+				// début spé Talentia
+				// Si la base n'accepte pas les champs Null.
+				if (isNull) {
+					// La propriété est nulle
+					if (fields[i] == null) {
+
+						if (entityMetamodel.getPropertyTypes()[i].getClass() == DoubleType.class) {
+							fields[i] = 0.0;
+						}
+						if (entityMetamodel.getPropertyTypes()[i].getClass() == IntegerType.class) {
+							fields[i] = 0;
+						}
+
+						// Si la base accepte les champs vides
+						if (!isEmpty) {
+							if (entityMetamodel.getPropertyTypes()[i].getClass() == StringType.class) {
+								fields[i] = "";
+							}
+							if (entityMetamodel.getPropertyTypes()[i].getClass() == CharacterType.class) {
+								fields[i] = new Character(' ');
+							}
+						}
+						// Si la base n'accepte pas les champs vides
+						if (isEmpty) {
+							if (entityMetamodel.getPropertyTypes()[i].getClass() == StringType.class) {
+								fields[i] = " ";
+							}
+							if (entityMetamodel.getPropertyTypes()[i].getClass() == CharacterType.class) {
+								fields[i] = new Character(' ');
+							}
+						}
+					}
+					// La propriété n'est pas nulle
+					if (fields[i] != null) {
+						// Si la base n'accepte pas les champs vides
+						if (isEmpty) {
+							if (entityMetamodel.getPropertyTypes()[i].getClass() == StringType.class && fields[i].equals("")) {
+								fields[i] = " ";
+							}
+							if (entityMetamodel.getPropertyTypes()[i].getClass() == CharacterType.class && fields[i].equals("")) {
+								fields[i] = new Character(' ');
+							}
+						}
+					}
+
+					// Si la base accepte les champs Null.
+					if (!isNull) {
+						// La valeur n'est pas nulle.
+						if (fields[i] != null) {
+							// Si la base n'accepte pas les champs vides
+							if (isEmpty) {
+								if (entityMetamodel.getPropertyTypes()[i].getClass() == StringType.class && fields[i].equals("")) {
+									fields[i] = null;
+								}
+								if (entityMetamodel.getPropertyTypes()[i].getClass() == CharacterType.class && fields[i].equals("")) {
+									fields[i] = null;
+								}
+							}
+						}
+					}
+				}
+				// fin spé Talentia
+				
 				getPropertyTypes()[i].nullSafeSet( ps, fields[i], index, includeColumns[i], session );
 				index += ArrayHelper.countTrue( includeColumns[i] ); //TODO:  this is kinda slow...
 			}
@@ -3195,6 +3278,13 @@ public abstract class AbstractEntityPersister
 			final boolean[] laziness = getPropertyLaziness();
 			final String[] propSubclassNames = getSubclassPropertySubclassNameClosure();
 
+			// début spé Talentia
+			boolean deleteWhiteSpace = false;
+			if (session.getFactory().getSessionFactoryOptions().getLsweBackofficeDeleteEndSpace() != null
+					&& session.getFactory().getSessionFactoryOptions().getLsweBackofficeDeleteEndSpace().equalsIgnoreCase("true"))
+				deleteWhiteSpace = true;
+			// fin spé Talentia			
+			
 			for ( int i = 0; i < types.length; i++ ) {
 				if ( !propertySelectable[i] ) {
 					values[i] = PropertyAccessStrategyBackRefImpl.UNKNOWN;
@@ -3217,6 +3307,23 @@ public abstract class AbstractEntityPersister
 				else {
 					values[i] = LazyPropertyInitializer.UNFETCHED_PROPERTY;
 				}
+				
+				// début spé Talentia
+				// On supprime les blancs - si valeur vide on la met à null
+				if (deleteWhiteSpace) {
+					if (values[i] != null) {
+						if (getPropertyTypes()[i].getClass().equals(StringType.class)) {
+							values[i] = ((String) values[i]).replaceAll(REGEXP_DEL_WHITE_SPACE, "");
+							if (((String) values[i]).isEmpty())
+								values[i] = null;
+						}
+						if (getPropertyTypes()[i].getClass().equals(CharacterType.class) && ((Character) values[i]) == ' ') {
+							values[i] = null;
+						}
+					}
+				}
+				// fin spé Talentia				
+				
 			}
 
 			if ( sequentialResultSet != null ) {
