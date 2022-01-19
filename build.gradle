@@ -76,7 +76,7 @@ allprojects {
 	// minimize changes, at least for now (gradle uses 'build' by default)..
 	buildDir = "target"
 
-	group = 'org.hibernate'
+	group = 'com.lswe.irisportail'
 	version = project.ormVersion.fullName
 }
 
