@@ -17,9 +17,11 @@ import org.hibernate.MappingException;
 import org.hibernate.NullPrecedence;
 import org.hibernate.cfg.Environment;
 import org.hibernate.dialect.function.AvgWithArgumentCastFunction;
+import org.hibernate.dialect.function.LowerWithArgumentCastFunction;
 import org.hibernate.dialect.function.NoArgSQLFunction;
 import org.hibernate.dialect.function.SQLFunctionTemplate;
 import org.hibernate.dialect.function.StandardSQLFunction;
+import org.hibernate.dialect.function.UpperWithArgumentCastFunction;
 import org.hibernate.dialect.function.VarArgsSQLFunction;
 import org.hibernate.dialect.identity.DB2IdentityColumnSupport;
 import org.hibernate.dialect.identity.IdentityColumnSupport;
@@ -194,6 +196,14 @@ public class DB2Dialect extends Dialect {
 		registerFunction( "lower", new StandardSQLFunction( "lower" ) );
 		registerFunction( "ucase", new StandardSQLFunction( "ucase" ) );
 		registerFunction( "lcase", new StandardSQLFunction( "lcase" ) );
+		
+		//Talentia
+		registerFunction("upper", new UpperWithArgumentCastFunction("varchar(255)") );
+		registerFunction("lower", new LowerWithArgumentCastFunction("varchar(255)") );
+		registerFunction("ucase", new UpperWithArgumentCastFunction("varchar(255)") );
+		registerFunction("lcase", new LowerWithArgumentCastFunction("varchar(255)") );
+		//Talentia
+		
 		registerFunction( "ltrim", new StandardSQLFunction( "ltrim" ) );
 		registerFunction( "rtrim", new StandardSQLFunction( "rtrim" ) );
 		registerFunction( "substr", new StandardSQLFunction( "substr", StandardBasicTypes.STRING ) );
