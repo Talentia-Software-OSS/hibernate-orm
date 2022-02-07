@@ -37,9 +37,9 @@ publishing {
 				}
 
 				scm {
-					url = 'https://github.com/hibernate/hibernate-orm'
-					connection = 'scm:git:https://github.com/hibernate/hibernate-orm.git'
-					developerConnection = 'scm:git:git@github.com:hibernate/hibernate-orm.git'
+					url = 'https://github.com/Talentia-Software/hibernate-orm'
+					connection = 'scm:git:https://github.com/Talentia-Software/hibernate-orm.git'
+					developerConnection = 'scm:git:git@github.com:Talentia-Software/hibernate-orm.git'
 				}
 
 				issueManagement {
