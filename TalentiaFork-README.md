@@ -10,11 +10,11 @@ Infinite manages a access to data with a complex strategy, mixing two SGBDR: the
 During the first access to the database, Hibernate will load in memory the relational-object mapping of the database, defined by the developer. During this loading, each persistence unit is also loaded once with all its parameters. We thus obtain several configurations, containing all the information necessary to check in the "UNIBOL_MAPPING" table the correspondence between the table name defined in the application and the real table name for a given type of database and a list of libraries.
 To do this we had to add 3 properties in the persistence units setting in the "persistence.xml" file to specify the database type, as well as the prefix and suffix of the corresponding libraries.
 
-`<property name="lswe.backoffice.database.type" value="" />` Where value can have as value: ORACLE, MSSQL, DB2/400.
+`<property name="lswe.backoffice.database.type" value="" />` Where value can be: ORACLE, MSSQL, DB2/400.
 
-`<property name="lswe.backoffice.prefix.lib" value=""/>` Where value is the prefix of a library, e.g. IRH61
+`<property name="lswe.backoffice.prefix.lib" value=""/>` Where value is the prefix of a HR-IP libraries, e.g. "IRH61"
 
-`<property name="lswe.backoffice.suffix.lib "value=""/>` Where value corresponds to the suffix of a library, e.g. CLI
+`<property name="lswe.backoffice.suffix.lib "value=""/>` Where value corresponds to the suffix of HR-IP library, e.g. "CLI"
 
 With these examples, we would obtain the libraries (in hierarchical order): IRH61SPCLI, IRH61FCLI, IRH61FXCLI, IRH61FX
 
